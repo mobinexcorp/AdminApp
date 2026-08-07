@@ -1,0 +1,6 @@
+{
+  "name": "Mobinex Corp Admin",
+  "description": "High Density Mobinex Corp Admin with IMEI List, Vendors Database, and Total Sales Record database with profit analytics, statistics, and Excel/CSV import and export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
