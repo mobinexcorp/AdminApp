@@ -303,7 +303,7 @@ export default function App() {
                 MA
               </div>
               <span className="font-semibold tracking-tight uppercase text-xs text-slate-100">
-                mobinexcorpadmin <span className="text-blue-400 font-mono text-[11px]">v1.0.1</span>
+                mobinexcorpadmin <span className="text-blue-400 font-mono text-[11px]">v1.0.2</span>
               </span>
             </div>
 
