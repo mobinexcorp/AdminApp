@@ -14,8 +14,10 @@
     "lint": "tsc --noEmit",
     "electron:start": "electron .",
     "electron:build": "vite build && npx electron-builder",
-    "dist": "vite build && npx electron-builder --win --x64",
-    "update": "node updater.js"
+    "dist": "vite build && electron-builder --win --x64",
+    "update": "node updater.js",
+    "publish:update": "node scripts/publish-update.mjs",
+    "configure:updates": "node scripts/configure-updates.mjs"
   },
   "build": {
     "appId": "com.mobinexcorpadmin.app",
@@ -29,19 +31,38 @@
       "output": "release"
     },
     "win": {
-      "target": ["zip", "dir"]
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true
-    }
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MobinexCorpAdmin",
+      "runAfterFinish": true
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "mobinexcorp",
+        "repo": "AdminApp"
+      }
+    ]
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
+    "electron-updater": "^6.6.2",
     "express": "^4.21.2",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
@@ -58,6 +79,7 @@
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "electron": "^43.3.0",
+    "electron-builder": "^26.15.3",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",

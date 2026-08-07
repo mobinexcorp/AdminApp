@@ -1,0 +1,6 @@
+{
+  "provider": "github",
+  "owner": "YOUR_GITHUB_USERNAME_OR_ORG",
+  "repo": "YOUR_REPOSITORY_NAME",
+  "private": false
+}
