@@ -1,7 +1,7 @@
 {
   "name": "mobinexcorpadmin",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MobinexCorpAdmin - Standalone Desktop App for Device IMEI, Vendors, and Total Sales Records",
   "author": "MobinexCorpAdmin Team",
   "type": "module",

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { SalesRecord, SalesFilter } from '../types';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import {
   Search,
   Filter,
@@ -46,6 +47,8 @@ export const SalesTable: React.FC<SalesTableProps> = ({
     sortBy: 'date',
     sortOrder: 'desc',
   });
+
+  const [salesToDelete, setSalesToDelete] = useState<SalesRecord | null>(null);
 
   // Extract unique vendor names for filter dropdown
   const uniqueVendors = useMemo(() => {
@@ -327,9 +330,10 @@ export const SalesTable: React.FC<SalesTableProps> = ({
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => onDeleteSales(s.id)}
+                          onClick={() => setSalesToDelete(s)}
                           className="p-1 hover:bg-rose-100 text-rose-600 rounded transition-colors"
                           title="Delete Sales Entry"
+                          id={`delete-sales-btn-${s.id}`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -364,6 +368,33 @@ export const SalesTable: React.FC<SalesTableProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={!!salesToDelete}
+        onClose={() => setSalesToDelete(null)}
+        onConfirm={() => {
+          if (salesToDelete) {
+            onDeleteSales(salesToDelete.id);
+            setSalesToDelete(null);
+          }
+        }}
+        title="Delete Sales Ledger Entry"
+        description={`Are you sure you want to delete the sales record for invoice #${salesToDelete?.invoiceNumber || ''}?`}
+        itemDetails={
+          salesToDelete
+            ? [
+                { label: 'Customer Invoice #', value: salesToDelete.invoiceNumber },
+                { label: 'Customer', value: salesToDelete.customerName },
+                { label: 'Total Price', value: `$${(salesToDelete.totalInvoicePrice || 0).toFixed(2)}` },
+                { label: 'Vendor Supplier', value: salesToDelete.vendorName || 'N/A' },
+                { label: 'Vendor Invoice #', value: salesToDelete.vendorInvoiceNumber || 'N/A' },
+              ]
+            : []
+        }
+        confirmText="Delete Sales Entry"
+        confirmVariant="danger"
+      />
     </div>
   );
 };

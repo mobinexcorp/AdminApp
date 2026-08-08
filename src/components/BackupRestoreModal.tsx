@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { CustomerRecord, VendorRecord, SalesRecord } from '../types';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import {
   X,
   Download,
@@ -58,6 +59,7 @@ export const BackupRestoreModal: React.FC<BackupRestoreModalProps> = ({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isConfirmReplaceOpen, setIsConfirmReplaceOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -176,18 +178,8 @@ export const BackupRestoreModal: React.FC<BackupRestoreModalProps> = ({
     reader.readAsText(file);
   };
 
-  const handleExecuteRestore = () => {
+  const applyRestore = () => {
     if (!parsedData) return;
-
-    if (restoreMode === 'replace') {
-      if (
-        !confirm(
-          `WARNING: This will replace your CURRENT database (${records.length} IMEI records, ${vendors.length} Vendors, ${sales.length} Sales) with the backed-up data (${parsedData.records.length} IMEI records, ${parsedData.vendors.length} Vendors, ${parsedData.sales.length} Sales).\n\nAre you sure you want to proceed?`
-        )
-      ) {
-        return;
-      }
-    }
 
     onRestoreBackup(
       parsedData.records,
@@ -201,6 +193,16 @@ export const BackupRestoreModal: React.FC<BackupRestoreModalProps> = ({
     );
     setParsedData(null);
     setSelectedFile(null);
+  };
+
+  const handleExecuteRestore = () => {
+    if (!parsedData) return;
+
+    if (restoreMode === 'replace') {
+      setIsConfirmReplaceOpen(true);
+    } else {
+      applyRestore();
+    }
   };
 
   return (
@@ -527,6 +529,25 @@ export const BackupRestoreModal: React.FC<BackupRestoreModalProps> = ({
           </div>
         </div>
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={isConfirmReplaceOpen}
+        onClose={() => setIsConfirmReplaceOpen(false)}
+        onConfirm={applyRestore}
+        title="Replace Database Warning"
+        description={`This will REPLACE your current database (${records.length} IMEI records, ${vendors.length} Vendors, ${sales.length} Sales) with the restored backup file.`}
+        itemDetails={
+          parsedData
+            ? [
+                { label: 'Backup IMEI Records', value: `${parsedData.records.length}` },
+                { label: 'Backup Vendor Records', value: `${parsedData.vendors.length}` },
+                { label: 'Backup Sales Ledger', value: `${parsedData.sales.length}` },
+              ]
+            : []
+        }
+        confirmText="Confirm & Overwrite Database"
+        confirmVariant="danger"
+      />
     </div>
   );
 };

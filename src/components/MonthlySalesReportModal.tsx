@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { SalesRecord } from '../types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -23,7 +23,9 @@ import {
   ArrowRight,
   PieChart,
   Table,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
 interface MonthlySalesReportModalProps {
@@ -1179,9 +1181,52 @@ Date: ${new Date().toLocaleDateString()}`;
     setTimeout(() => setCopiedEmailBody(false), 2000);
   };
 
+  // Fullscreen modal state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = () => {
+    setIsFullscreen((prev) => {
+      const nextState = !prev;
+      if (nextState) {
+        if (modalRef.current?.requestFullscreen) {
+          modalRef.current.requestFullscreen().catch(() => {});
+        }
+      } else {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+      return nextState;
+    });
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [isFullscreen]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 select-none">
-      <div className="bg-white rounded border border-slate-300 shadow-xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center select-none transition-all duration-150 ${
+        isFullscreen
+          ? 'bg-slate-950 p-0 w-screen h-screen'
+          : 'bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4'
+      }`}
+    >
+      <div
+        ref={modalRef}
+        className={`bg-white overflow-hidden flex flex-col transition-all duration-150 ${
+          isFullscreen
+            ? 'w-screen h-screen max-w-none max-h-none rounded-none border-0 shadow-none'
+            : 'rounded border border-slate-300 shadow-xl w-full max-w-5xl max-h-[92vh]'
+        }`}
+      >
         {/* Header Bar */}
         <div className="px-4 py-3 bg-[#1a1c1e] text-white flex items-center justify-between border-b border-black shrink-0">
           <div className="flex items-center gap-2.5">
@@ -1191,18 +1236,53 @@ Date: ${new Date().toLocaleDateString()}`;
             <div>
               <h3 className="font-bold text-xs uppercase tracking-tight text-white flex items-center gap-2">
                 Monthly Sales PDF Report, Print & Email Console
+                {isFullscreen && (
+                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] px-2 py-0.5 rounded font-mono uppercase tracking-wider">
+                    Full Screen
+                  </span>
+                )}
               </h3>
               <p className="text-[10px] text-slate-400">
                 Generate total sales report for each month together, export PDF statements, print, or email accountants.
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className={`p-1.5 rounded transition-colors flex items-center gap-1 text-xs font-bold border ${
+                isFullscreen
+                  ? 'bg-amber-600/30 text-amber-300 border-amber-500/50 hover:bg-amber-600/50'
+                  : 'bg-slate-800/80 text-slate-200 border-slate-700 hover:text-white hover:bg-slate-700'
+              }`}
+              title={isFullscreen ? 'Exit Full Screen View' : 'Maximize to Full Screen'}
+              id="header-toggle-fullscreen-btn"
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline text-[11px]">Exit Full Screen</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="hidden sm:inline text-[11px]">Full Screen</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              title="Close Console"
+              id="close-monthly-modal-btn"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Navigation Tabs: Consolidated All Months vs Single Month */}
@@ -1237,6 +1317,30 @@ Date: ${new Date().toLocaleDateString()}`;
 
           {/* Action Export Buttons */}
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className={`px-3 py-1.5 rounded font-bold text-xs transition-colors shadow-2xs flex items-center gap-1.5 border ${
+                isFullscreen
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-500'
+                  : 'bg-slate-800 hover:bg-slate-900 text-white border-slate-700'
+              }`}
+              title={isFullscreen ? 'Exit Full Screen' : 'Toggle Full Screen Mode'}
+              id="toolbar-fullscreen-sales-report-btn"
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-amber-200" />
+                  <span>EXIT FULL SCREEN</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-blue-200" />
+                  <span>FULL SCREEN</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handleExportExcel}
               className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500 rounded font-bold text-xs transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"

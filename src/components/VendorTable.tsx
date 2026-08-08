@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { VendorRecord, VendorFilter } from '../types';
 import { GRADES } from '../data/initialData';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import {
   Search,
   ArrowUpDown,
@@ -47,6 +48,7 @@ export const VendorTable: React.FC<VendorTableProps> = ({
   });
 
   const [copiedIMEI, setCopiedIMEI] = useState<string | null>(null);
+  const [vendorToDelete, setVendorToDelete] = useState<VendorRecord | null>(null);
 
   // Sync highlightIMEI if changed
   React.useEffect(() => {
@@ -330,11 +332,7 @@ export const VendorTable: React.FC<VendorTableProps> = ({
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => {
-                            if (confirm(`Are you sure you want to delete vendor entry for ${vendor.vendorName} (${vendor.imei})?`)) {
-                              onDeleteVendor(vendor.id);
-                            }
-                          }}
+                          onClick={() => setVendorToDelete(vendor)}
                           className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
                           title="Delete Vendor Record"
                           id={`delete-vendor-btn-${vendor.id}`}
@@ -389,6 +387,33 @@ export const VendorTable: React.FC<VendorTableProps> = ({
           SORT: {filter.sortBy} [{filter.sortOrder}]
         </span>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={!!vendorToDelete}
+        onClose={() => setVendorToDelete(null)}
+        onConfirm={() => {
+          if (vendorToDelete) {
+            onDeleteVendor(vendorToDelete.id);
+            setVendorToDelete(null);
+          }
+        }}
+        title="Delete Vendor Entry"
+        description={`Are you sure you want to delete the supplier entry for ${vendorToDelete?.vendorName || 'this vendor'}?`}
+        itemDetails={
+          vendorToDelete
+            ? [
+                { label: 'Vendor Supplier', value: vendorToDelete.vendorName },
+                { label: 'Device Model', value: vendorToDelete.model },
+                { label: 'IMEI', value: vendorToDelete.imei },
+                { label: 'Invoice #', value: vendorToDelete.invoiceNumber },
+                { label: 'Grade', value: vendorToDelete.grade || 'N/A' },
+              ]
+            : []
+        }
+        confirmText="Delete Vendor Entry"
+        confirmVariant="danger"
+      />
     </div>
   );
 };

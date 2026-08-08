@@ -12,6 +12,7 @@ import { BackupRestoreModal } from './components/BackupRestoreModal';
 import { MonthlySalesReportModal } from './components/MonthlySalesReportModal';
 import { VendorPriceListModal } from './components/VendorPriceListModal';
 import { DistributorPriceCompareModal } from './components/DistributorPriceCompareModal';
+import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { SalesTable } from './components/SalesTable';
 import { SalesStatsVisuals } from './components/SalesStatsVisuals';
 import { SalesFormModal } from './components/SalesFormModal';
@@ -109,6 +110,7 @@ export default function App() {
   const [isMonthlyReportOpen, setIsMonthlyReportOpen] = useState(false);
   const [isPriceListOpen, setIsPriceListOpen] = useState(false);
   const [isDistributorCompareOpen, setIsDistributorCompareOpen] = useState(false);
+  const [isResetDemoModalOpen, setIsResetDemoModalOpen] = useState(false);
 
   // Restore whole database
   const handleRestoreBackup = (
@@ -285,11 +287,7 @@ export default function App() {
   };
 
   const handleResetSampleData = () => {
-    if (confirm('Reset to demo records, vendors, and sales ledger? This will restore initial sample databases.')) {
-      setRecords(INITIAL_RECORDS);
-      setVendors(INITIAL_VENDORS);
-      setSales(INITIAL_SALES);
-    }
+    setIsResetDemoModalOpen(true);
   };
 
   return (
@@ -303,7 +301,7 @@ export default function App() {
                 MA
               </div>
               <span className="font-semibold tracking-tight uppercase text-xs text-slate-100">
-                mobinexcorpadmin <span className="text-blue-400 font-mono text-[11px]">v1.0.2</span>
+                mobinexcorpadmin <span className="text-blue-400 font-mono text-[11px]">v1.0.3</span>
               </span>
             </div>
 
@@ -670,6 +668,25 @@ export default function App() {
           onClose={() => setIsDistributorCompareOpen(false)}
         />
       )}
+
+      <DeleteConfirmationModal
+        isOpen={isResetDemoModalOpen}
+        onClose={() => setIsResetDemoModalOpen(false)}
+        onConfirm={() => {
+          setRecords(INITIAL_RECORDS);
+          setVendors(INITIAL_VENDORS);
+          setSales(INITIAL_SALES);
+        }}
+        title="Reset Demo Sample Data"
+        description="Are you sure you want to reset all databases (IMEI Records, Vendors Database, and Sales Ledger) back to the initial demo records?"
+        itemDetails={[
+          { label: 'Customer Records', value: `${INITIAL_RECORDS.length} records` },
+          { label: 'Vendor Database', value: `${INITIAL_VENDORS.length} entries` },
+          { label: 'Sales Ledger', value: `${INITIAL_SALES.length} entries` },
+        ]}
+        confirmText="Reset to Demo Data"
+        confirmVariant="warning"
+      />
     </div>
   );
 }

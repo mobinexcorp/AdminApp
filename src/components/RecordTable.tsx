@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { CustomerRecord, RecordFilter, DeviceGrade } from '../types';
 import { GRADES } from '../data/initialData';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import {
   Search,
   Filter,
@@ -49,6 +50,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({
   });
 
   const [copiedIMEI, setCopiedIMEI] = useState<string | null>(null);
+  const [recordToDelete, setRecordToDelete] = useState<CustomerRecord | null>(null);
 
   const handleCopyIMEI = (imei: string) => {
     navigator.clipboard.writeText(imei);
@@ -327,11 +329,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => {
-                            if (confirm(`Are you sure you want to delete record for ${record.customerName}?`)) {
-                              onDeleteRecord(record.id);
-                            }
-                          }}
+                          onClick={() => setRecordToDelete(record)}
                           className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
                           title="Delete Record"
                           id={`delete-btn-${record.id}`}
@@ -386,6 +384,33 @@ export const RecordTable: React.FC<RecordTableProps> = ({
           SORT: {filter.sortBy} [{filter.sortOrder}]
         </span>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={!!recordToDelete}
+        onClose={() => setRecordToDelete(null)}
+        onConfirm={() => {
+          if (recordToDelete) {
+            onDeleteRecord(recordToDelete.id);
+            setRecordToDelete(null);
+          }
+        }}
+        title="Delete Customer IMEI Record"
+        description={`Are you sure you want to delete the record for ${recordToDelete?.customerName || 'this customer'}?`}
+        itemDetails={
+          recordToDelete
+            ? [
+                { label: 'Customer', value: recordToDelete.customerName },
+                { label: 'Device Model', value: recordToDelete.model },
+                { label: 'IMEI', value: recordToDelete.imei },
+                { label: 'Invoice #', value: recordToDelete.invoiceNumber },
+                { label: 'Grade', value: recordToDelete.grade },
+              ]
+            : []
+        }
+        confirmText="Delete Record"
+        confirmVariant="danger"
+      />
     </div>
   );
 };
